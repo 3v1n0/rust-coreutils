@@ -1262,6 +1262,27 @@ fn get_sane_control_char(cc_index: S) -> u8 {
         S::VTIME => 0,
         #[cfg(target_os = "linux")]
         S::VSWTC => 0,
+        // BSD-family sane defaults (GNU uses CDSUSP = ^Y, CSTATUS = ^T).
+        #[cfg(any(
+            target_os = "freebsd",
+            target_os = "dragonfly",
+            target_os = "ios",
+            target_os = "macos",
+            target_os = "netbsd",
+            target_os = "openbsd",
+            target_os = "aix",
+            target_os = "solaris"
+        ))]
+        S::VDSUSP => 25, // ^Y
+        #[cfg(any(
+            target_os = "freebsd",
+            target_os = "dragonfly",
+            target_os = "ios",
+            target_os = "macos",
+            target_os = "netbsd",
+            target_os = "openbsd",
+        ))]
+        S::VSTATUS => 20, // ^T
         _ => 0,
     }
 }
