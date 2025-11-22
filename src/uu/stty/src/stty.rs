@@ -690,10 +690,15 @@ fn print_terminal_size(
         );
     }
 
-    #[cfg(any(target_os = "linux", target_os = "redox"))]
+    #[cfg(any(target_os = "linux", target_os = "android", target_os = "haiku"))]
     {
-        // For some reason the normal nix Termios struct does not expose the line,
-        // so we get the underlying libc::termios struct to get that information.
+        let line = termios.line_discipline;
+        printer.print(&translate!("stty-output-line", "line" => line));
+    }
+    #[cfg(target_os = "redox")]
+    {
+        // nix does not expose the line discipline on Redox, so we get the
+        // underlying libc::termios struct to read that information.
         let libc_termios: nix::libc::termios = termios.clone().into();
         let line = libc_termios.c_line;
         printer.print(&translate!("stty-output-line", "line" => line));
@@ -1053,12 +1058,12 @@ fn apply_special_setting(
         SpecialSetting::Rows(n) => size.rows = *n,
         SpecialSetting::Cols(n) => size.columns = *n,
         #[cfg_attr(
-            not(any(target_os = "linux", target_os = "android")),
+            not(any(target_os = "linux", target_os = "android", target_os = "haiku")),
             expect(unused_variables)
         )]
         SpecialSetting::Line(n) => {
             // nix only defines Termios's `line_discipline` field on these platforms
-            #[cfg(any(target_os = "linux", target_os = "android"))]
+            #[cfg(any(target_os = "linux", target_os = "android", target_os = "haiku"))]
             {
                 _termios.line_discipline = *n;
             }
